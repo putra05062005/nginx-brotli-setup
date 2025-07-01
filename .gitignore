@@ -1,0 +1,10 @@
+# Sertifikat pribadi jangan dipush!
+ssl/*.key
+
+# File editor
+*.swp
+*.swo
+
+# Log dan cache
+*.log
+*.cache
