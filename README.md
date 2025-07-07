@@ -61,3 +61,59 @@ MIT License.
 
 <details>
 <summary>Contoh file .gitignore</summary>
+
+
+Proteksi Otomatis dengan Fail2ban
+
+Untuk melindungi server dari serangan brute-force, fail2ban dikonfigurasi dengan beberapa "penjara" (jail) yang memantau file log dan memblokir alamat IP yang mencurigakan.
+
+1. Proteksi SSH [sshd]
+
+Ini adalah pengaman utama untuk layanan SSH. Jail ini memantau log otentikasi dan akan memblokir IP yang berulang kali gagal saat mencoba login.
+
+    File Konfigurasi: /etc/fail2ban/jail.local
+
+    Isi Konfigurasi:
+    Ini, TOML
+
+    [sshd]
+    enabled = true
+    backend = systemd
+    port    = ssh
+
+2. Proteksi Otentikasi Web [nginx-http-auth]
+
+Meskipun saat ini tidak ada halaman yang diproteksi password, jail ini diaktifkan sebagai lapisan keamanan tambahan untuk memblokir percobaan brute-force pada halaman login atau direktori terproteksi di masa depan.
+
+    File Konfigurasi: /etc/fail2ban/jail.local
+
+    Isi Konfigurasi:
+    Ini, TOML
+
+    [nginx-http-auth]
+    enabled = true
+    port    = http,https
+
+3. Proteksi Scanning Halaman [nginx-404] (Filter Kustom)
+
+Filter bawaan terkadang tidak cocok untuk mendeteksi eror 404 Not Found. Oleh karena itu, dibuat filter dan jail kustom untuk memblokir IP yang terlalu sering melakukan scanning halaman yang tidak ada.
+
+    File Filter: /etc/fail2ban/filter.d/nginx-404.conf
+
+    Isi Filter:
+    Ini, TOML
+
+[Definition]
+failregex = ^<HOST> .* "GET .* HTTP/1\.." 404
+
+File Konfigurasi Jail: /etc/fail2ban/jail.local
+
+Isi Konfigurasi Jail:
+Ini, TOML
+
+[nginx-404]
+enabled  = true
+port     = http,https
+filter   = nginx-404
+logpath  = /var/log/nginx/access.log
+maxretry = 5
