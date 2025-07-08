@@ -1,0 +1,21 @@
+server {
+    listen 80;
+    listen 443 ssl;
+    server_name _;
+
+    root /var/www/my-app;
+    index index.html;
+
+    # Pengaturan SSL
+    ssl_certificate /etc/ssl/localcerts/nginx-selfsigned.crt;
+    ssl_certificate_key /etc/ssl/localcerts/nginx-selfsigned.key;
+
+    # Pengaturan Browser Cache
+    location ~* \.(css|js|jpg|jpeg|png)$ {
+        expires 7d;
+    }
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
