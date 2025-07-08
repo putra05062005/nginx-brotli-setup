@@ -1,0 +1,9 @@
+---
+- hosts: server_latihan
+  become: yes
+  roles:
+    - common
+    - ssh_hardening
+    - fail2ban
+    - nginx
+    - webapp

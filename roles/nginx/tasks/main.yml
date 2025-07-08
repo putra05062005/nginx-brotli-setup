@@ -1,0 +1,49 @@
+---
+- name: Add Sury.org repository for Nginx
+  shell: "curl -sSL https://packages.sury.org/nginx/README.txt | bash -x"
+  args:
+    creates: /etc/apt/sources.list.d/nginx.list
+
+- name: Install Nginx with Brotli modules
+  apt:
+    name:
+      - nginx-extras
+      - libnginx-mod-http-brotli-filter
+      - libnginx-mod-http-brotli-static
+    update_cache: yes
+
+- name: Create SSL directory
+  file:
+    path: /etc/ssl/localcerts
+    state: directory
+
+- name: Generate self-signed SSL certificate
+  community.crypto.openssl_certificate:
+    path: /etc/ssl/localcerts/nginx.crt
+    privatekey_path: /etc/ssl/localcerts/nginx.key
+    provider: selfsigned
+
+- name: Copy main Nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx
+
+- name: Copy Nginx site configuration
+  template:
+    src: my-app.j2
+    dest: /etc/nginx/sites-available/my-app
+  notify: restart nginx
+
+- name: Enable the new site
+  file:
+    src: /etc/nginx/sites-available/my-app
+    dest: /etc/nginx/sites-enabled/my-app
+    state: link
+  notify: restart nginx
+
+- name: Remove default Nginx site
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx

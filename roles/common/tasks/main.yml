@@ -1,0 +1,9 @@
+---
+- name: Update APT cache and install common packages
+  apt:
+    name:
+      - curl
+      - gnupg2
+      - ca-certificates
+      - lsb-release
+    update_cache: yes

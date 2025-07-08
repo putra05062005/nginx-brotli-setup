@@ -1,0 +1,10 @@
+---
+- name: Create web directory
+  file:
+    path: /var/www/my-app
+    state: directory
+
+- name: Copy index.html to web root
+  copy:
+    src: index.html
+    dest: /var/www/my-app/index.html

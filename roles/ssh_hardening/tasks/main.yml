@@ -1,0 +1,14 @@
+---
+- name: Change SSH port
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?Port 22'
+    line: 'Port 2323'
+  notify: restart sshd
+
+- name: Disable password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PasswordAuthentication yes'
+    line: 'PasswordAuthentication no'
+  notify: restart sshd
