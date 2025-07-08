@@ -1,121 +1,154 @@
-# NGINX Brotli Setup with SSL, Tuning & Hardening on Debian 12
+Proyek Otomasi Server Debian dengan Ansible
+📖 Gambaran Umum Proyek
 
-🖥️ Proyek ini adalah mini setup server menggunakan Debian 12 di VirtualBox.
-Menggunakan NGINX + Brotli + SSL self-signed + aplikasi web statis, dengan fokus pada optimasi performa dan penguatan keamanan.
+Proyek ini adalah implementasi otomasi penuh untuk setup dan konfigurasi sebuah server web berbasis Debian 12. Semua langkah, mulai dari pengamanan dasar hingga instalasi layanan web, dikelola secara otomatis menggunakan Ansible.
 
-## ✅ Fitur
+Tujuannya adalah untuk mengubah sebuah server Debian yang baru diinstal menjadi lingkungan web yang siap pakai, aman, dan teroptimasi hanya dengan menjalankan satu perintah.
 
-### Fitur Utama
-- SSH via port forwarding (port default diganti ke `2323`)
-- Login SSH hanya dengan SSH Key (login password dinonaktifkan)
-- Web server NGINX (versi `nginx-extras` dari repo Sury)
-- Sertifikat SSL self-signed untuk HTTPS
-- Modul Brotli aktif untuk kompresi modern
-- Web statis sederhana `index.html`
+Arsitektur:
 
-### Tuning & Hardening
-- **Tuning Performa:** Optimalisasi Nginx `worker_processes`, `keepalive_timeout`, `open_file_cache`, dan Gzip sebagai *fallback*.
-- **Hardening Keamanan:** Konfigurasi Firewall UFW, menyembunyikan versi Nginx, *HTTP Security Headers*, menonaktifkan login root via SSH, dan instalasi `fail2ban` untuk proteksi otomatis.
+    Control Node (Pengendali): Komputer utama (Host).
 
-## 📄 Konfigurasi Penting di Server
+    Managed Node (Target): Mesin Virtual Debian 12 di VirtualBox.
+
+✅ Fitur yang Diotomatisasi
+
+Playbook Ansible ini akan mengonfigurasi fitur-fitur berikut secara otomatis:
+
+    Pengamanan SSH (ssh_hardening):
+
+        Mengganti port SSH default untuk mengurangi serangan bot.
+
+        Menonaktifkan login dengan password, hanya mengizinkan otentikasi dengan kunci SSH.
+
+        Melarang login sebagai user root.
+
+    Instalasi Nginx (nginx):
+
+        Menambahkan repositori pihak ketiga (deb.sury.org) untuk mendapatkan versi Nginx terbaru.
+
+        Menginstal Nginx dengan modul Brotli untuk kompresi modern.
+
+        Membuat sertifikat SSL self-signed untuk koneksi HTTPS.
+
+    Tuning Performa Nginx (nginx):
+
+        Mengaktifkan kompresi Brotli dan Gzip (sebagai cadangan).
+
+        Mengatur Open File Cache untuk mempercepat penyajian file statis.
+
+        Mengoptimalkan Keepalive Connections.
+
+    Proteksi Otomatis (fail2ban):
+
+        Menginstal dan mengaktifkan Fail2ban.
+
+        Mengonfigurasi "penjara" (jail) untuk melindungi layanan SSH dan Nginx dari serangan brute-force dan scanning.
+
+    Deployment Aplikasi Web (webapp):
+
+        Menyalin file web statis (index.html) ke direktori server.
+
+📁 Struktur Proyek Ansible
+
+Proyek ini menggunakan struktur berbasis roles yang merupakan praktik terbaik Ansible untuk menjaga agar konfigurasi tetap terorganisir dan dapat digunakan kembali.
+
+ansible-server-setup/
+├── inventory             # Mendefinisikan server target
+├── playbook.yml          # "Daftar isi" yang menjalankan semua roles
+└── roles/
+    ├── common/           # Tugas umum (instalasi paket dasar)
+    ├── ssh_hardening/    # Semua tugas terkait pengamanan SSH
+    ├── fail2ban/         # Semua tugas terkait instalasi & konfigurasi Fail2ban
+    ├── nginx/            # Semua tugas terkait Nginx (instalasi, SSL, tuning)
+    └── webapp/           # Tugas untuk men-deploy aplikasi web
+
+🚀 Cara Menjalankan Proyek
+
+Proses ini dijalankan dari komputer utama (Host) untuk mengonfigurasi VM Debian (Guest).
+Prasyarat
+
+    Ansible terpasang di komputer utama.
+
+    Sebuah VM Debian 12 yang baru diinstal dan berjalan di VirtualBox.
+
+    Kunci SSH dari komputer utama sudah disalin ke dalam VM (ssh-copy-id).
+
+    Port Forwarding di VirtualBox sudah diatur untuk SSH (misal: Host 2222 → Guest 22).
+
+Langkah Eksekusi
+
+    Clone Repositori
+    Di komputer utama Anda, clone repositori proyek ini:
+
+    git clone git@github.com:putra05062005/nginx-brotli-setup.git
+    cd nginx-brotli-setup
+
+    Jalankan Playbook Ansible
+    Dari dalam direktori proyek, jalankan perintah berikut:
+
+    ansible-playbook -i inventory playbook.yml
+
+    Ansible akan terhubung ke VM dan menjalankan semua konfigurasi secara otomatis.
+
+    Verifikasi Hasil
+    Setelah playbook selesai, akses website Anda melalui browser di komputer utama:
+    https://server.latihan:8443
+    (Pastikan file /etc/hosts di komputer utama Anda sudah ditambahkan baris 127.0.0.1 server.latihan dan Port Forwarding untuk HTTPS sudah diatur).
+
+📝 Catatan Proses Manual & Konsep
+
+<details>
+<summary>Klik untuk melihat penjelasan detail setiap konfigurasi</summary>
+Konfigurasi Penting di Server
 
 Konfigurasi utama untuk proyek ini ada di dalam server Debian pada path berikut:
 
-- **/etc/nginx/nginx.conf**: Konfigurasi global Nginx, tempat kita mengatur worker, Gzip, Brotli, dan Open File Cache.
-- **/etc/nginx/sites-available/my-app**: Konfigurasi *server block* untuk aplikasi kita, termasuk pengaturan SSL dan Browser Cache.
-- **/etc/ssh/sshd_config**: Konfigurasi layanan SSH, tempat kita mengubah port dan menonaktifkan login password.
-- **/etc/fail2ban/jail.local**: Konfigurasi Fail2ban untuk proteksi SSH.
-- **/var/www/my-app/index.html**: Lokasi file web statis kita.
+    /etc/nginx/nginx.conf: Konfigurasi global Nginx, tempat kita mengatur worker, Gzip, Brotli, dan Open File Cache.
 
-## 🔧 Tuning & Hardening yang Diterapkan
+    /etc/nginx/sites-available/my-app: Konfigurasi server block untuk aplikasi kita, termasuk pengaturan SSL dan Browser Cache.
 
-### Peningkatan Performa
-- **Worker Processes:** `worker_processes` diatur agar sesuai dengan jumlah core CPU.
-- **Keepalive:** `keepalive_timeout` diaktifkan untuk menjaga koneksi tetap terbuka dan mengurangi latensi.
-- **Open File Cache:** `open_file_cache` diaktifkan untuk menyimpan metadata file di memori, mengurangi beban I/O disk.
-- **Gzip Fallback:** Kompresi Gzip diaktifkan sebagai cadangan untuk browser lama yang tidak mendukung Brotli.
+    /etc/ssh/sshd_config: Konfigurasi layanan SSH, tempat kita mengubah port dan menonaktifkan login password.
 
-### Peningkatan Keamanan
-- **Firewall (UFW):** Hanya port yang diperlukan (SSH `2323`, Web `80` & `443`) yang diizinkan.
-- **Nginx Security:** `server_tokens off` untuk menyembunyikan versi Nginx dan `add_header` untuk menerapkan *HTTP Security Headers* (`X-Frame-Options`, dll).
-- **SSH Hardening:** `PermitRootLogin no` untuk mencegah login langsung sebagai root.
-- **Fail2ban:** Diinstal dan aktif untuk secara otomatis memblokir IP yang mencoba serangan *brute-force* ke SSH.
+    /etc/fail2ban/jail.local: Konfigurasi Fail2ban untuk proteksi SSH dan Nginx.
 
+    /var/www/my-app/index.html: Lokasi file web statis kita.
 
-## 🚀 Cara Coba
+Tuning & Hardening yang Diterapkan
+Peningkatan Performa
 
-1.  Jalankan Debian VM via VirtualBox.
-2.  Pastikan Port Forwarding diatur:
-    - **SSH:** Host Port `2222` → Guest Port `2323`
-    - **HTTPS:** Host Port `8443` → Guest Port `443`
-3.  Akses via SSH (dari komputer utama):
-    ```bash
-    ssh user@127.0.0.1 -p 2222
-    ```
-4.  Buka browser di komputer utama:
-    `https://server.latihan:8443`
-    *(Pastikan file `/etc/hosts` di komputer utama Anda sudah ditambahkan baris `127.0.0.1 server.latihan`)*
+    Worker Processes: worker_processes diatur agar sesuai dengan jumlah core CPU untuk memaksimalkan efisiensi.
 
-## 📜 Lisensi
-MIT License.
+    Keepalive: keepalive_timeout diaktifkan untuk menjaga koneksi tetap terbuka dan mengurangi latensi.
 
-<details>
-<summary>Contoh file .gitignore</summary>
+    Open File Cache: open_file_cache diaktifkan untuk menyimpan metadata file di memori, mengurangi beban I/O disk.
 
+    Gzip Fallback: Kompresi Gzip diaktifkan sebagai cadangan untuk browser lama yang tidak mendukung Brotli.
+
+Peningkatan Keamanan
+
+    Firewall (UFW): Hanya port yang diperlukan (SSH 2323, Web 80 & 443) yang diizinkan.
+
+    Nginx Security: server_tokens off untuk menyembunyikan versi Nginx dan add_header untuk menerapkan HTTP Security Headers (X-Frame-Options, dll).
+
+    SSH Hardening: PermitRootLogin no untuk mencegah login langsung sebagai root.
+
+    Fail2ban: Diinstal dan aktif untuk secara otomatis memblokir IP yang mencoba serangan brute-force.
 
 Proteksi Otomatis dengan Fail2ban
 
-Untuk melindungi server dari serangan brute-force, fail2ban dikonfigurasi dengan beberapa "penjara" (jail) yang memantau file log dan memblokir alamat IP yang mencurigakan.
+fail2ban dikonfigurasi dengan beberapa "penjara" (jail) untuk memantau file log dan memblokir alamat IP yang mencurigakan.
 
-1. Proteksi SSH [sshd]
+    Proteksi SSH [sshd]
+    Mengamankan layanan SSH dengan memantau log otentikasi dan memblokir IP yang berulang kali gagal login.
 
-Ini adalah pengaman utama untuk layanan SSH. Jail ini memantau log otentikasi dan akan memblokir IP yang berulang kali gagal saat mencoba login.
+    Proteksi Otentikasi Web [nginx-http-auth]
+    Diaktifkan sebagai lapisan keamanan tambahan untuk memblokir percobaan brute-force pada halaman login atau direktori terproteksi.
 
-    File Konfigurasi: /etc/fail2ban/jail.local
+    Proteksi Scanning Halaman [nginx-404] (Filter Kustom)
+    Dibuat filter dan jail kustom untuk memblokir IP yang terlalu sering melakukan scanning halaman yang tidak ada (menghasilkan eror 404).
 
-    Isi Konfigurasi:
-    Ini, TOML
+</details>
+📜 Lisensi
 
-    [sshd]
-    enabled = true
-    backend = systemd
-    port    = ssh
-
-2. Proteksi Otentikasi Web [nginx-http-auth]
-
-Meskipun saat ini tidak ada halaman yang diproteksi password, jail ini diaktifkan sebagai lapisan keamanan tambahan untuk memblokir percobaan brute-force pada halaman login atau direktori terproteksi di masa depan.
-
-    File Konfigurasi: /etc/fail2ban/jail.local
-
-    Isi Konfigurasi:
-    Ini, TOML
-
-    [nginx-http-auth]
-    enabled = true
-    port    = http,https
-
-3. Proteksi Scanning Halaman [nginx-404] (Filter Kustom)
-
-Filter bawaan terkadang tidak cocok untuk mendeteksi eror 404 Not Found. Oleh karena itu, dibuat filter dan jail kustom untuk memblokir IP yang terlalu sering melakukan scanning halaman yang tidak ada.
-
-    File Filter: /etc/fail2ban/filter.d/nginx-404.conf
-
-    Isi Filter:
-    Ini, TOML
-
-[Definition]
-failregex = ^<HOST> .* "GET .* HTTP/1\.." 404
-
-File Konfigurasi Jail: /etc/fail2ban/jail.local
-
-Isi Konfigurasi Jail:
-Ini, TOML
-
-[nginx-404]
-enabled  = true
-port     = http,https
-filter   = nginx-404
-logpath  = /var/log/nginx/access.log
-maxretry = 5
-
-###Maybe Last :)
+MIT License.
