@@ -1,4 +1,4 @@
-Proyek Otomasi Server Debian dengan Ansible
+🛡️ Proyek Otomasi Server Debian dengan Ansible 🚀
 📖 Gambaran Umum Proyek
 
 Proyek ini adalah implementasi otomasi penuh untuk setup dan konfigurasi sebuah server web berbasis Debian 12. Semua langkah, mulai dari pengamanan dasar hingga instalasi layanan web, dikelola secara otomatis menggunakan Ansible.
@@ -15,39 +15,15 @@ Arsitektur:
 
 Playbook Ansible ini akan mengonfigurasi fitur-fitur berikut secara otomatis:
 
-    Pengamanan SSH (ssh_hardening):
+    Pengamanan SSH (ssh_hardening): Mengganti port, menonaktifkan password, dan melarang login root.
 
-        Mengganti port SSH default untuk mengurangi serangan bot.
+    Instalasi Nginx (nginx): Menambahkan repo Sury, menginstal Nginx dengan Brotli, dan membuat sertifikat SSL self-signed.
 
-        Menonaktifkan login dengan password, hanya mengizinkan otentikasi dengan kunci SSH.
+    Tuning Performa Nginx (nginx): Mengaktifkan kompresi Brotli & Gzip, mengatur Open File Cache, dan mengoptimalkan Keepalive.
 
-        Melarang login sebagai user root.
+    Proteksi Otomatis (fail2ban): Menginstal dan mengonfigurasi Fail2ban untuk melindungi SSH dan Nginx.
 
-    Instalasi Nginx (nginx):
-
-        Menambahkan repositori pihak ketiga (deb.sury.org) untuk mendapatkan versi Nginx terbaru.
-
-        Menginstal Nginx dengan modul Brotli untuk kompresi modern.
-
-        Membuat sertifikat SSL self-signed untuk koneksi HTTPS.
-
-    Tuning Performa Nginx (nginx):
-
-        Mengaktifkan kompresi Brotli dan Gzip (sebagai cadangan).
-
-        Mengatur Open File Cache untuk mempercepat penyajian file statis.
-
-        Mengoptimalkan Keepalive Connections.
-
-    Proteksi Otomatis (fail2ban):
-
-        Menginstal dan mengaktifkan Fail2ban.
-
-        Mengonfigurasi "penjara" (jail) untuk melindungi layanan SSH dan Nginx dari serangan brute-force dan scanning.
-
-    Deployment Aplikasi Web (webapp):
-
-        Menyalin file web statis (index.html) ke direktori server.
+    Deployment Aplikasi Web (webapp): Menyalin file web statis ke direktori server.
 
 📁 Struktur Proyek Ansible
 
