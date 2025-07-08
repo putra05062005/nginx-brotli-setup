@@ -10,8 +10,8 @@ add_header X-XSS-Protection "1; mode=block";
     index index.html;
 
     # Pengaturan SSL
-    ssl_certificate /etc/ssl/localcerts/nginx-selfsigned.crt;
-    ssl_certificate_key /etc/ssl/localcerts/nginx-selfsigned.key;
+    ssl_certificate /etc/ssl/localcerts/nginx.crt;
+    ssl_certificate_key /etc/ssl/localcerts/nginx.key;
 
     # Pengaturan Browser Cache
     location ~* \.(css|js|jpg|jpeg|png)$ {

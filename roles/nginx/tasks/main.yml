@@ -1,11 +1,11 @@
 ---
 - name: Add Sury.org repository for Nginx
-  shell: "curl -sSL https://packages.sury.org/nginx/README.txt | bash -x"
+  ansible.builtin.shell: "curl -sSL https://packages.sury.org/nginx/README.txt | bash -x"
   args:
     creates: /etc/apt/sources.list.d/nginx.list
 
 - name: Install Nginx with Brotli modules
-  apt:
+  ansible.builtin.apt:
     name:
       - nginx-extras
       - libnginx-mod-http-brotli-filter
@@ -13,37 +13,41 @@
     update_cache: yes
 
 - name: Create SSL directory
-  file:
+  ansible.builtin.file:
     path: /etc/ssl/localcerts
     state: directory
 
+- name: Generate an OpenSSL private key
+  community.crypto.openssl_privatekey:
+    path: /etc/ssl/localcerts/nginx.key
+
 - name: Generate self-signed SSL certificate
-  community.crypto.openssl_certificate:
+  community.crypto.x509_certificate:
     path: /etc/ssl/localcerts/nginx.crt
     privatekey_path: /etc/ssl/localcerts/nginx.key
     provider: selfsigned
 
 - name: Copy main Nginx configuration
-  template:
+  ansible.builtin.template:
     src: nginx.conf.j2
     dest: /etc/nginx/nginx.conf
   notify: restart nginx
 
 - name: Copy Nginx site configuration
-  template:
+  ansible.builtin.template:
     src: my-app.j2
     dest: /etc/nginx/sites-available/my-app
   notify: restart nginx
 
 - name: Enable the new site
-  file:
+  ansible.builtin.file:
     src: /etc/nginx/sites-available/my-app
     dest: /etc/nginx/sites-enabled/my-app
     state: link
   notify: restart nginx
 
 - name: Remove default Nginx site
-  file:
+  ansible.builtin.file:
     path: /etc/nginx/sites-enabled/default
     state: absent
   notify: restart nginx
