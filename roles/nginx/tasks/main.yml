@@ -5,7 +5,7 @@
     creates: /etc/apt/sources.list.d/nginx.list
 
 - name: Install Nginx with Brotli modules
-  ansible.builtin.apt:
+  ansible.builtin.package:
     name:
       - nginx-extras
       - libnginx-mod-http-brotli-filter
@@ -51,3 +51,10 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
   notify: restart nginx
+
+- name: Ensure nginx is started and enabled
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: yes
+

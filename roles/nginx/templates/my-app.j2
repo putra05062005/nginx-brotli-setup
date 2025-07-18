@@ -4,14 +4,14 @@ add_header X-Content-Type-Options "nosniff";
 add_header X-XSS-Protection "1; mode=block";
     listen 80;
     listen 443 ssl;
-    server_name server.latihan;
+    server_name {{ server.name }};
 
-    root /var/www/my-app;
+    root {{ root.path }};
     index index.html;
 
     # Pengaturan SSL
-    ssl_certificate /etc/ssl/localcerts/nginx.crt;
-    ssl_certificate_key /etc/ssl/localcerts/nginx.key;
+    ssl_certificate {{ ssl.cert }};
+    ssl_certificate_key {{ ssl.key }};
 
     # Pengaturan Browser Cache
     location ~* \.(css|js|jpg|jpeg|png)$ {

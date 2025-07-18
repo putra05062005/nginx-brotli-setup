@@ -1,0 +1,7 @@
+---
+# Paket untuk sistem berbasis RedHat
+common_packages:
+  - curl
+  - gnupg2
+  - ca-certificates
+  - redhat-lsb-core

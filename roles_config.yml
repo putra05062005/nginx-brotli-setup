@@ -1,0 +1,29 @@
+daftar_roles:
+  - name: common
+    aktif: true
+
+  - name: fail2ban
+    aktif: true
+
+  - name: nginx
+    aktif: true
+    server:
+      name: "server.latihan"
+    root:
+      path: "/var/www/my-app"
+    ssl:
+      cert: "/etc/ssl/localcerts/nginx.crt"
+      key: "/etc/ssl/localcerts/nginx.key"
+
+  - name: ssh_hardening
+    aktif: true
+    ssh:
+      port: "2323"
+      permit:
+        root:
+          login: "no"
+      password:
+        authentication: "no"
+
+  - name: webapp
+    aktif: true

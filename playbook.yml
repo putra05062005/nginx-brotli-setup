@@ -1,9 +1,20 @@
----
-- hosts: server_latihan
+- name: Jalankan role secara dinamis
+  hosts: server_latihan
   become: yes
-  roles:
-    - common
-    - ssh_hardening
-    - fail2ban
-    - nginx
-    - webapp
+  vars_files:
+    - roles_config.yml
+
+  tasks:
+    # - name: Tampilkan semua role dari daftar_roles
+      # debug:
+        # var: daftar_roles
+
+    - name: Jalankan role yang aktif secara dinamis
+      include_role:
+        name: "{{ item.name }}"
+      loop: "{{ daftar_roles | selectattr('aktif', 'equalto', true) | list }}"
+      vars:
+        server: "{{ item.server | default(omit) }}"
+        root: "{{ item.root | default(omit) }}"
+        ssl: "{{ item.ssl | default(omit) }}"
+        ssh: "{{ item.ssh | default(omit) }}"

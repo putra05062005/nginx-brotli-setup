@@ -1,130 +1,120 @@
-🛡️ Proyek Otomasi Server Debian dengan Ansible 🚀
-📖 Gambaran Umum Proyek
+# 🛡️ Proyek Otomasi Server Debian dengan Ansible 🚀
 
-Proyek ini adalah implementasi otomasi penuh untuk setup dan konfigurasi sebuah server web berbasis Debian 12. Semua langkah, mulai dari pengamanan dasar hingga instalasi layanan web, dikelola secara otomatis menggunakan Ansible.
+## 📖 Gambaran Umum
 
-Tujuannya adalah untuk mengubah sebuah server Debian yang baru diinstal menjadi lingkungan web yang siap pakai, aman, dan teroptimasi hanya dengan menjalankan satu perintah.
+Proyek ini adalah implementasi **otomasi penuh** untuk setup dan konfigurasi server web berbasis **Debian 12** menggunakan **Ansible**.
 
-Arsitektur:
+Tujuannya adalah mengubah server Debian yang baru diinstal menjadi **lingkungan web yang siap pakai, aman, dan optimal** — hanya dengan menjalankan satu perintah.
 
-    Control Node (Pengendali): Komputer utama (Host).
+### 🏗️ Arsitektur
 
-    Managed Node (Target): Mesin Virtual Debian 12 di VirtualBox.
+- **Control Node**: Komputer utama (Host) tempat menjalankan Ansible.
+- **Managed Node**: Mesin Virtual Debian 12 (Guest VM di VirtualBox).
 
-✅ Fitur yang Diotomatisasi
+---
 
-Playbook Ansible ini akan mengonfigurasi fitur-fitur berikut secara otomatis:
+## ✅ Fitur yang Diotomatisasi
 
-    Pengamanan SSH (ssh_hardening): Mengganti port, menonaktifkan password, dan melarang login root.
+Playbook Ansible ini mengelola konfigurasi berikut secara otomatis:
 
-    Instalasi Nginx (nginx): Menambahkan repo Sury, menginstal Nginx dengan Brotli, dan membuat sertifikat SSL self-signed.
+- 🔐 **SSH Hardening**: Ganti port, nonaktifkan password, dan larang login root.
+- 🌐 **Instalasi Nginx**: Tambah repo Sury, instal Nginx dengan Brotli, setup SSL self-signed.
+- 🚀 **Tuning Nginx**: Aktifkan Brotli & Gzip, open file cache, keepalive optimization.
+- 🔒 **Proteksi Fail2ban**: Proteksi terhadap brute-force untuk SSH & Nginx.
+- 🌍 **Deployment WebApp**: Salin file statis ke `/var/www/my-app`.
 
-    Tuning Performa Nginx (nginx): Mengaktifkan kompresi Brotli & Gzip, mengatur Open File Cache, dan mengoptimalkan Keepalive.
+---
 
-    Proteksi Otomatis (fail2ban): Menginstal dan mengonfigurasi Fail2ban untuk melindungi SSH dan Nginx.
-
-    Deployment Aplikasi Web (webapp): Menyalin file web statis ke direktori server.
-
-📁 Struktur Proyek Ansible
-
-Proyek ini menggunakan struktur berbasis roles yang merupakan praktik terbaik Ansible untuk menjaga agar konfigurasi tetap terorganisir dan dapat digunakan kembali.
+## 📁 Struktur Proyek
 
 ansible-server-setup/
-├── inventory             # Mendefinisikan server target
-├── playbook.yml          # "Daftar isi" yang menjalankan semua roles
-└── roles/
-    ├── common/           # Tugas umum (instalasi paket dasar)
-    ├── ssh_hardening/    # Semua tugas terkait pengamanan SSH
-    ├── fail2ban/         # Semua tugas terkait instalasi & konfigurasi Fail2ban
-    ├── nginx/            # Semua tugas terkait Nginx (instalasi, SSL, tuning)
-    └── webapp/           # Tugas untuk men-deploy aplikasi web
+├── inventory # File target host
+├── playbook.yml # Main playbook
+├── roles/
+│ ├── common/ # Instalasi paket dasar
+│ ├── ssh_hardening/ # Pengamanan SSH
+│ ├── fail2ban/ # Instal & konfigurasi Fail2ban
+│ ├── nginx/ # Instalasi & tuning Nginx
+│ └── webapp/ # Deployment aplikasi web statis
+├── roles_config.yml # Konfigurasi parameter per-role
+└── ssl/ # Sertifikat SSL lokal (self-signed)
 
-🚀 Cara Menjalankan Proyek
 
-Proses ini dijalankan dari komputer utama (Host) untuk mengonfigurasi VM Debian (Guest).
-Prasyarat
 
-    Ansible terpasang di komputer utama.
+---
 
-    Sebuah VM Debian 12 yang baru diinstal dan berjalan di VirtualBox.
+## 🚀 Cara Menjalankan
 
-    Kunci SSH dari komputer utama sudah disalin ke dalam VM (ssh-copy-id).
+### ⚙️ Prasyarat
 
-    Port Forwarding di VirtualBox sudah diatur untuk SSH (misal: Host 2222 → Guest 22).
+- Ansible sudah terinstal di Host.
+- VM Debian 12 berjalan di VirtualBox.
+- SSH key Host sudah disalin ke VM (`ssh-copy-id`).
+- Port forwarding VirtualBox sudah diatur:
+  - SSH: Host 2222 → Guest 22
+  - HTTPS: Host 8443 → Guest 443
 
-Langkah Eksekusi
+### 🧪 Langkah Eksekusi
 
-    Clone Repositori
-    Di komputer utama Anda, clone repositori proyek ini:
+1. **Clone repositori:**
 
-    git clone git@github.com:putra05062005/nginx-brotli-setup.git
-    cd nginx-brotli-setup
+```bash
+git clone https://github.com/putra05062005/nginx-brotli-setup.git
+cd nginx-brotli-setup
 
-    Jalankan Playbook Ansible
-    Dari dalam direktori proyek, jalankan perintah berikut:
 
-    ansible-playbook -i inventory playbook.yml
+Jalankan playbook:
 
-    Ansible akan terhubung ke VM dan menjalankan semua konfigurasi secara otomatis.
+ansible-playbook -i inventory playbook.yml
 
-    Verifikasi Hasil
-    Setelah playbook selesai, akses website Anda melalui browser di komputer utama:
-    https://server.latihan:8443
-    (Pastikan file /etc/hosts di komputer utama Anda sudah ditambahkan baris 127.0.0.1 server.latihan dan Port Forwarding untuk HTTPS sudah diatur).
+Verifikasi:
+Buka browser dan akses: 
+https://server.latihan:8443
+⚠️ Tambahkan 127.0.0.1 server.latihan ke file /etc/hosts di komputer Host.
 
-📝 Catatan Proses Manual & Konsep
+🔍 Konfigurasi Penting
+File	Fungsi
+/etc/nginx/nginx.conf	Konfigurasi utama Nginx
+/etc/nginx/sites-available/my-app	Konfigurasi VirtualHost / SSL
+/etc/ssh/sshd_config	Pengaturan SSH
+/etc/fail2ban/jail.local	Jail & filter Fail2ban
+/var/www/my-app/index.html	File web yang dideploy
 
-<details>
-<summary>Klik untuk melihat penjelasan detail setiap konfigurasi</summary>
-Konfigurasi Penting di Server
+⚙️ Tuning & Hardening
+📈 Performa
 
-Konfigurasi utama untuk proyek ini ada di dalam server Debian pada path berikut:
+    worker_processes sesuai jumlah CPU core
 
-    /etc/nginx/nginx.conf: Konfigurasi global Nginx, tempat kita mengatur worker, Gzip, Brotli, dan Open File Cache.
+    keepalive_timeout diatur untuk efisiensi koneksi
 
-    /etc/nginx/sites-available/my-app: Konfigurasi server block untuk aplikasi kita, termasuk pengaturan SSL dan Browser Cache.
+    open_file_cache aktif untuk kurangi beban disk
 
-    /etc/ssh/sshd_config: Konfigurasi layanan SSH, tempat kita mengubah port dan menonaktifkan login password.
+    gzip fallback untuk browser lama
 
-    /etc/fail2ban/jail.local: Konfigurasi Fail2ban untuk proteksi SSH dan Nginx.
+🔐 Keamanan
 
-    /var/www/my-app/index.html: Lokasi file web statis kita.
+    SSH Hardening: PermitRootLogin no, PasswordAuthentication no
 
-Tuning & Hardening yang Diterapkan
-Peningkatan Performa
+    Fail2ban: Melindungi SSH, Nginx, dan custom jail 404
 
-    Worker Processes: worker_processes diatur agar sesuai dengan jumlah core CPU untuk memaksimalkan efisiensi.
+    Nginx security headers: X-Frame-Options, X-Content-Type-Options, dll.
 
-    Keepalive: keepalive_timeout diaktifkan untuk menjaga koneksi tetap terbuka dan mengurangi latensi.
+    UFW (opsional): Buka hanya port 2323 (SSH), 80, 443
 
-    Open File Cache: open_file_cache diaktifkan untuk menyimpan metadata file di memori, mengurangi beban I/O disk.
+🛡️ Proteksi Otomatis (Fail2ban)
 
-    Gzip Fallback: Kompresi Gzip diaktifkan sebagai cadangan untuk browser lama yang tidak mendukung Brotli.
+    sshd: blok brute-force login SSH
 
-Peningkatan Keamanan
+    nginx-http-auth: blok serangan ke basic-auth
 
-    Firewall (UFW): Hanya port yang diperlukan (SSH 2323, Web 80 & 443) yang diizinkan.
+    nginx-404: filter kustom blok scanning halaman tidak valid
 
-    Nginx Security: server_tokens off untuk menyembunyikan versi Nginx dan add_header untuk menerapkan HTTP Security Headers (X-Frame-Options, dll).
+📝 Lisensi
 
-    SSH Hardening: PermitRootLogin no untuk mencegah login langsung sebagai root.
+MIT License
 
-    Fail2ban: Diinstal dan aktif untuk secara otomatis memblokir IP yang mencoba serangan brute-force.
+Dibuat dengan oleh pahala Putra Tambunan
 
-Proteksi Otomatis dengan Fail2ban
 
-fail2ban dikonfigurasi dengan beberapa "penjara" (jail) untuk memantau file log dan memblokir alamat IP yang mencurigakan.
+---
 
-    Proteksi SSH [sshd]
-    Mengamankan layanan SSH dengan memantau log otentikasi dan memblokir IP yang berulang kali gagal login.
-
-    Proteksi Otentikasi Web [nginx-http-auth]
-    Diaktifkan sebagai lapisan keamanan tambahan untuk memblokir percobaan brute-force pada halaman login atau direktori terproteksi.
-
-    Proteksi Scanning Halaman [nginx-404] (Filter Kustom)
-    Dibuat filter dan jail kustom untuk memblokir IP yang terlalu sering melakukan scanning halaman yang tidak ada (menghasilkan eror 404).
-
-</details>
-📜 Lisensi
-
-MIT License.

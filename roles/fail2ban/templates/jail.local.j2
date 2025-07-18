@@ -1,11 +1,9 @@
 [DEFAULT]
-# Kosongkan untuk sekarang, bisa diisi nanti
+# Add any default config here (optional)
 
-[sshd]
-enabled = true
-backend = systemd
-port = 2323
-
-[nginx-http-auth]
-enabled = true
-port    = http,https
+{% for jail, config in fail2ban_jail.items() %}
+[{{ jail }}]
+{% for key, value in config.items() %}
+{{ key }} = {{ value }}
+{% endfor %}
+{% endfor %}

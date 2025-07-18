@@ -1,9 +1,17 @@
 ---
-- name: Update APT cache and install common packages
-  apt:
-    name:
-      - curl
-      - gnupg2
-      - ca-certificates
-      - lsb-release
+- name: Include OS-specific variables
+  ansible.builtin.include_vars: "{{ ansible_os_family }}.yml"
+  # Tugas ini akan memuat variabel yang namanya cocok dengan keluarga OS Target
+
+- name: Update APT package cache (Debian-based system only)
+  ansible.builtin.apt:
     update_cache: yes
+  when: ansible_os_family == "Debian"
+  changed_when: false
+  # Tugas ini hanya berjalan jika os-nya adalah turunan Debian
+
+- name: Install common packages for {{ ansible_os_family }}
+  ansible.builtin.package:
+    name: "{{ common_packages }}"
+    state: present
+  # Tugas ini menggunakan modul universal _package_, akan menginstall daftar paket dari variabel common_packages

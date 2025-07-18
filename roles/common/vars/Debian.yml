@@ -1,0 +1,7 @@
+---
+# Paket untuk sistem berbasis Debian
+common_packages:
+  - curl
+  - gnupg2
+  - ca-certificates
+  - lsb-release

@@ -1,14 +1,22 @@
+# tasks/main.yml (versi baru yang fleksibel)
 ---
 - name: Change SSH port
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^#?Port 22'
-    line: 'Port 2323'
+    regexp: '^#?Port '
+    line: 'Port {{ ssh.port }}'
+  notify: restart sshd
+
+- name: Disable root login
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?PermitRootLogin '
+    line: 'PermitRootLogin {{ ssh.permit.root.login }}'
   notify: restart sshd
 
 - name: Disable password authentication
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
-    regexp: '^#?PasswordAuthentication yes'
-    line: 'PasswordAuthentication no'
+    regexp: '^#?PasswordAuthentication '
+    line: 'PasswordAuthentication {{ ssh.password.authentication }}'  # <-- PERUBAHAN DI SINI
   notify: restart sshd
