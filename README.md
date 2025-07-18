@@ -113,7 +113,7 @@ File	Fungsi
 
 MIT License
 
-Dibuat dengan oleh pahala Putra Tambunan
+Dibuat oleh pahala Putra Tambunan
 
 
 ---
