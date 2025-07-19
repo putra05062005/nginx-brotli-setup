@@ -114,7 +114,5 @@ File	Fungsi
 MIT License
 
 Dibuat oleh pahala Putra Tambunan
-
-
 ---
 
