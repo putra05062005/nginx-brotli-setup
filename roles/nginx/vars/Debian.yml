@@ -1,0 +1,7 @@
+nginx_module_packages:
+  http_ssl_module: nginx-extras
+  http_v2_module: nginx-extras
+  stream_module: nginx-extras
+  brotli: 
+    - libnginx-mod-http-brotli-filter
+    - libnginx-mod-http-brotli-static

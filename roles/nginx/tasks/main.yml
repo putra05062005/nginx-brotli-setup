@@ -4,13 +4,14 @@
   args:
     creates: /etc/apt/sources.list.d/nginx.list
 
-- name: Install Nginx with Brotli modules
+# Install nginx + modules berdasarkan variabel
+- name: Install nginx and modules
   ansible.builtin.package:
-    name:
-      - nginx-extras
-      - libnginx-mod-http-brotli-filter
-      - libnginx-mod-http-brotli-static
+    name: "{{ nginx_module_packages[item] | default(item) }}"
+    state: present
     update_cache: yes
+  loop: "{{ nginx.modules | default([]) }}"
+  notify: restart nginx
 
 - name: Create SSL directory
   ansible.builtin.file:
@@ -57,4 +58,3 @@
     name: nginx
     state: started
     enabled: yes
-
