@@ -1,77 +1,58 @@
-user www-data;
-worker_processes auto;
-pid /run/nginx.pid;
-error_log /var/log/nginx/error.log;
-include /etc/nginx/modules-enabled/*.conf;
-
+user {{ nginx_user | default("www-data") }};
+worker_processes {{ nginx_worker_processes | default("auto") }};
+pid {{ nginx_pid | default("/run/nginx.pid") }};
+error_log {{ nginx_error_log | default("/var/log/nginx/error.log") }};
+include {{ nginx_modules_conf | default("/etc/nginx/modules-enabled/*.conf") }};
 
 events {
-        worker_connections 1024;
-        # multi_accept on;
+    worker_connections {{ nginx_worker_connections | default(1024) }};
+    {% if nginx_multi_accept is defined %}
+    multi_accept {{ nginx_multi_accept }};
+    {% endif %}
 }
 
 http {
-        server_tokens off;
-        brotli on;
-	brotli_comp_level 6;
-	brotli_static on;
-	brotli_types text/plain text/css application/javascript application/json image/svg+xml application/xml+rss;
-        # Pengaturan Open File Cache
-        open_file_cache max=2000 inactive=30s;
-	open_file_cache_valid 60s;
-	open_file_cache_min_uses 2;
-	open_file_cache_errors on;
+    server_tokens {{ nginx_server_tokens | default("off") }};
 
-        ##
-        # Basic Settings
-        ##
+    # Brotli
+    brotli {{ nginx_brotli | default("on") }};
+    brotli_comp_level {{ nginx_brotli_comp_level | default(6) }};
+    brotli_static {{ nginx_brotli_static | default("on") }};
+    brotli_types {{ nginx_brotli_types | default("text/plain text/css application/javascript application/json image/svg+xml application/xml+rss") }};
 
-        sendfile on;
-        tcp_nopush on;
-        types_hash_max_size 2048;
-        # server_tokens off;
+    # Open File Cache
+    open_file_cache max={{ nginx_open_file_cache_max | default(2000) }} inactive={{ nginx_open_file_cache_inactive | default("30s") }};
+    open_file_cache_valid {{ nginx_open_file_cache_valid | default("60s") }};
+    open_file_cache_min_uses {{ nginx_open_file_cache_min_uses | default(2) }};
+    open_file_cache_errors {{ nginx_open_file_cache_errors | default("on") }};
 
-        # server_names_hash_bucket_size 64;
-        # server_name_in_redirect off;
+    # Basic Settings
+    sendfile {{ nginx_sendfile | default("on") }};
+    tcp_nopush {{ nginx_tcp_nopush | default("on") }};
+    types_hash_max_size {{ nginx_types_hash_max_size | default(2048) }};
 
-include /etc/nginx/mime.types;
-        default_type application/octet-stream;
+    include {{ nginx_mime_types | default("/etc/nginx/mime.types") }};
+    default_type application/octet-strzeam;
 
-        ##
-        # SSL Settings
-        ##
+    # SSL
+    ssl_protocols {{ nginx_ssl_protocols | default("TLSv1 TLSv1.1 TLSv1.2 TLSv1.3") }};
+    ssl_prefer_server_ciphers {{ nginx_ssl_prefer_server_ciphers | default("on") }};
 
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3; # Dropping SSLv3, ref: POODLE
-        ssl_prefer_server_ciphers on;
+    # Logs
+    access_log {{ nginx_access_log | default("/var/log/nginx/access.log") }};
 
-        ##
-        # Logging Settings
-        ##
+    # Gzip
+    gzip {{ nginx_gzip | default("on") }};
+    gzip_vary {{ nginx_gzip_vary | default("on") }};
+    gzip_proxied {{ nginx_gzip_proxied | default("any") }};
+    gzip_comp_level {{ nginx_gzip_comp_level | default(6) }};
+    gzip_types {{ nginx_gzip_types | default("text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript") }};
 
-        access_log /var/log/nginx/access.log;
+    # Virtual Hosts
+    include {{ nginx_conf_d | default("/etc/nginx/conf.d/*.conf") }};
+    include {{ nginx_sites_enabled | default("/etc/nginx/sites-enabled/*") }};
 
-        ##
-        # Gzip Settings
-        ##
-
-        gzip on;
-
-        gzip_vary on;
-        gzip_proxied any;
-        gzip_comp_level 6;
-        # gzip_buffers 16 8k;
-        # gzip_http_version 1.1;
-        gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
-
-        ##
-        # Virtual Host Configs
-        ##
-
-        include /etc/nginx/conf.d/*.conf;
-        include /etc/nginx/sites-enabled/*;
-
-        #Tuning Keepalive Connections
-        keepalive_timeout 65;
-        keepalive_requests 100;
-
+    # Keepalive
+    keepalive_timeout {{ nginx_keepalive_timeout | default(65) }};
+    keepalive_requests {{ nginx_keepalive_requests | default(100) }};
 }

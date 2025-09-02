@@ -1,0 +1,6 @@
+nginx_user: "www-data"
+nginx_worker_processes: "auto"
+nginx_worker_connections: 1024
+nginx_server_tokens: "off"
+nginx_brotli: "on"
+nginx_gzip: "on"
